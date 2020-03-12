@@ -15,7 +15,7 @@ mount /dev/sdb2 /mnt/mnt/bootloader
 mount /dev/sdb5 /mnt/mnt/mac
 nano /etc/packman.d/mirrorlist
 
-pacstrap -D /mnt base linux-headers sudo fakeroot htop git patch vim make cmake meson ninja pkg-config lld lldb llvm clang grub grub-btrfs btrfs-progs hfsprogs dhcpcd iw openssh xf86-video-intel xf86-video-nouveau broadcom-wl sway light alacritty alsa-utils firefox
+pacstrap -D /mnt base linux-headers sudo fakeroot htop git patch vim make cmake meson ninja pkg-config lld lldb llvm clang grub grub-btrfs btrfs-progs hfsprogs dhcpcd wpa_supplicant openssh xf86-video-intel xf86-video-nouveau broadcom-wl sway light alacritty alsa-utils firefox
 genfstab -U /mnt >> /mnt/etc/fstab
 arch-chroot /mnt
 
@@ -38,7 +38,24 @@ echo -e "$PASSWORD\n$PASSWORD" | passwd $USERNAME
 echo -e "$PASSWORD\n$PASSWORD" | passwd
 mv ./sudoers /etc/sudoers
 # visudo
-systemctl enable dhcpcd.service
+
+cat > /etc/systemd/network/20-wired.network <<EOL
+[Match]
+Name=eth0
+[Network]
+DHCP=true
+[DHCP]
+RouteMetric=10
+EOL
+cat > /etc/systemd/network/25-wireless.network <<EOL
+[Match]
+Name=wlan0
+[Network]
+DHCP=true
+[DHCP]
+RouteMetric=20
+EOL
+systemctl enable systemd-networkd
 
 su $USERNAME
 cd ~
@@ -63,6 +80,7 @@ cd ..
 exit
 
 mkdir -p /boot/grub /mnt/bootloader/mach_kernel /mnt/bootloader/System/Library/CoreServices
+sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="vconsole.keymap=de-latin1 net.ifnames=0 biosdevname=0"/g' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 grub-mkstandalone -o /mnt/bootloader/System/Library/CoreServices/boot.efi -d /usr/lib/grub/x86_64-efi -O x86_64-efi --compress=xz /boot/grub/grub.cfg
 sed -i 's/BINARIES=()/BINARIES=("\/usr\/bin\/btrfs")/g' /etc/mkinitcpio.conf
