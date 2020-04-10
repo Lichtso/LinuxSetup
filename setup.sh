@@ -32,7 +32,6 @@ locale-gen
 echo "LANG=$LANG" > /etc/locale.conf
 echo "KEYMAP=de-latin1" > /etc/vconsole.conf
 echo "$HOSTNAME" > /etc/hostname
-echo "export MOZ_ENABLE_WAYLAND=1" > /etc/profile.d/firefox.sh
 useradd -m -g users -G wheel -s /bin/bash $USERNAME
 echo -e "$PASSWORD\n$PASSWORD" | passwd $USERNAME
 echo -e "$PASSWORD\n$PASSWORD" | passwd
@@ -78,6 +77,14 @@ ninja -C build
 sudo ninja -C build install
 cd ..
 exit
+
+cat > /etc/profile.d/wayland.sh <<EOL
+export MOZ_ENABLE_WAYLAND=1
+export GDK_BACKEND=wayland
+export QT_QPA_PLATFORM=wayland
+export CLUTTER_BACKEND=wayland
+export SDL_VIDEODRIVER=wayland
+EOL
 
 mkdir -p /boot/grub /mnt/bootloader/mach_kernel /mnt/bootloader/System/Library/CoreServices
 sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="vconsole.keymap=de-latin1 net.ifnames=0 biosdevname=0"/g' /etc/default/grub
