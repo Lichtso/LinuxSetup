@@ -15,7 +15,7 @@ mount /dev/sdb2 /mnt/mnt/bootloader
 mount /dev/sdb5 /mnt/mnt/mac
 nano /etc/packman.d/mirrorlist
 
-pacstrap -D /mnt base linux-headers sudo fakeroot htop git patch vim make cmake meson ninja pkg-config lld lldb llvm clang grub grub-btrfs btrfs-progs hfsprogs dhcpcd wpa_supplicant openssh xf86-video-intel xf86-video-nouveau broadcom-wl sway light alacritty alsa-utils firefox
+pacstrap -D /mnt base linux-headers sudo fakeroot htop git patch neovim make cmake meson ninja pkg-config lld lldb llvm clang grub grub-btrfs btrfs-progs hfsprogs dhcpcd broadcom-wl wpa_supplicant openssh vulkan-icd-loader xf86-video-intel xf86-video-nouveau vulkan-intel sway light alacritty alsa-utils firefox
 genfstab -U /mnt >> /mnt/etc/fstab
 arch-chroot /mnt
 
@@ -76,6 +76,7 @@ meson build
 ninja -C build
 sudo ninja -C build install
 cd ..
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 exit
 
 cat > /etc/profile.d/wayland.sh <<EOL
